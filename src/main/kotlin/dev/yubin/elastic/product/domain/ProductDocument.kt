@@ -8,7 +8,7 @@ import org.springframework.data.elasticsearch.annotations.*
 class ProductDocument(
 
     @Id
-    var id: Long,
+    var id: String,
 
     @MultiField(
         mainField = Field(type = FieldType.Text, analyzer = "products_name_analyzer"),
