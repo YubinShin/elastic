@@ -5,6 +5,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.noarg") version "1.9.25"
     id("org.springframework.boot") version "3.5.3"
     id("io.spring.dependency-management") version "1.1.7"
+    kotlin("kapt") version "1.9.25"
 }
 
 
@@ -29,10 +30,12 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     runtimeOnly("com.mysql:mysql-connector-j")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
+    kapt("org.springframework.boot:spring-boot-configuration-processor")
+
 }
 
 tasks.withType<Test> {
@@ -49,3 +52,4 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 noArg {
     annotation("jakarta.persistence.Entity") // ✅ JPA 엔티티에 no-arg 생성자 붙임
 }
+
