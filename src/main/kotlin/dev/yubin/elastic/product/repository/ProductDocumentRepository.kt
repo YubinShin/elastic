@@ -1,4 +1,4 @@
-package dev.yubin.elastic.product
+package dev.yubin.elastic.product.repository
 
 import dev.yubin.elastic.product.domain.ProductDocument
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository

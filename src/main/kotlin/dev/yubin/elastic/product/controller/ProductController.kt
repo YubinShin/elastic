@@ -1,5 +1,6 @@
-package dev.yubin.elastic.product
+package dev.yubin.elastic.product.controller
 
+import dev.yubin.elastic.product.service.ProductService
 import dev.yubin.elastic.product.domain.Product
 import dev.yubin.elastic.product.dto.CreateProductRequestDto
 import org.springframework.http.ResponseEntity
