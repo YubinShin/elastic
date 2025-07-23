@@ -1,0 +1,93 @@
+[
+  {
+    "name": "삼성 갤럭시 S25",
+    "description": "<h2>최신 스마트폰</h2><p>AI 기능과 강력한 배터리를 갖춘 프리미엄 스마트폰입니다.</p>",
+    "price": 1290000,
+    "rating": 4.8,
+    "category": "ELECTRONICS"
+  },
+  {
+    "name": "애플 아이폰 16 Pro",
+    "description": "<p>차세대 iPhone. 카메라 성능과 칩셋이 대폭 향상되었습니다.</p>",
+    "price": 1550000,
+    "rating": 4.9,
+    "category": "ELECTRONICS"
+  },
+  {
+    "name": "노트북 LG 그램 17",
+    "description": "<p>초경량 랩탑으로 출장과 재택근무에 최적화된 컴퓨터입니다.</p>",
+    "price": 1890000,
+    "rating": 4.5,
+    "category": "LAPTOP"
+  },
+  {
+    "name": "Apple MacBook Air M3",
+    "description": "<p>가볍고 빠른 맥북. macOS Sonoma와 최고의 호환성을 자랑합니다.</p>",
+    "price": 1650000,
+    "rating": 4.7,
+    "category": "LAPTOP"
+  },
+  {
+    "name": "갤럭시 Z 플립6 휴대전화",
+    "description": "<p>접히는 스마트폰의 혁신. 디자인과 기능을 모두 갖춘 폴더블 폰입니다.</p>",
+    "price": 1390000,
+    "rating": 4.6,
+    "category": "MOBILE"
+  },
+  {
+    "name": "맥 스튜디오 데스크탑",
+    "description": "<p>영상 편집과 프로덕션 작업에 최적화된 mac 기반 고성능 컴퓨터입니다.</p>",
+    "price": 2990000,
+    "rating": 4.9,
+    "category": "DESKTOP"
+  },
+  {
+    "name": "아이폰 SE 4세대",
+    "description": "<p>작고 강력한 스마트폰. 휴대성과 성능을 동시에 갖춘 아이폰입니다.</p>",
+    "price": 750000,
+    "rating": 4.4,
+    "category": "ELECTRONICS"
+  },
+  {
+    "name": "삼성 갤럭시 탭 S10",
+    "description": "<p>강력한 성능의 안드로이드 태블릿. 전화기 기능도 포함되어 있습니다.</p>",
+    "price": 990000,
+    "rating": 4.3,
+    "category": "TABLET"
+  },
+  {
+    "name": "Apple iPhone 15 Mini",
+    "description": "<p>휴대성이 뛰어난 미니 스마트폰. 애플의 감성을 그대로 담았습니다.</p>",
+    "price": 1050000,
+    "rating": 4.6,
+    "category": "ELECTRONICS"
+  },
+  {
+    "name": "ASUS ROG 노트북",
+    "description": "<p>게임과 작업을 동시에! 강력한 랩탑 성능과 쿨링을 자랑합니다.</p>",
+    "price": 2090000,
+    "rating": 4.5,
+    "category": "LAPTOP"
+  },
+  {
+    "name": "곱창 돌김생김",
+    "description": "신선한 곱창김으로 만든 전통 방식의 돌김입니다.",
+    "price": 3900,
+    "rating": 4.5,
+    "category": "식품"
+  },
+  {
+    "name": "구운 돌김",
+    "description": "불에 구워 바삭한 식감을 살린 프리미엄 돌김.",
+    "price": 4500,
+    "rating": 4.7,
+    "category": "식품"
+  },
+  {
+    "name": "완도 곱창 돌김 100매",
+    "description": "완도산 곱창김 100매 구성, 김밥용으로 적합.",
+    "price": 12900,
+    "rating": 4.8,
+    "category": "식품"
+  }
+]

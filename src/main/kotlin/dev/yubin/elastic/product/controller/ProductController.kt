@@ -27,6 +27,11 @@ class ProductController(
         return ResponseEntity.ok(product)
     }
 
+    @PostMapping("/bulk")
+    fun createProducts(@RequestBody products: List<CreateProductRequestDto>): List<Product> {
+        return productService.createProducts(products)
+    }
+
     @DeleteMapping("/{id}")
     fun deleteProduct(@PathVariable id: Long): ResponseEntity<Void> {
         productService.deleteProduct(id)

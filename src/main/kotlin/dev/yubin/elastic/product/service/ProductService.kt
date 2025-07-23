@@ -33,9 +33,29 @@ class ProductService(
         )
         val saved = productRepository.save(product)
         eventPublisher.publishEvent(ProductCreatedEvent(saved))
-        return productRepository.save(product)
+        return saved
     }
 
+    @Transactional
+    fun createProducts(products: List<CreateProductRequestDto>): List<Product> {
+        val entities = products.map { dto ->
+            Product(
+                name = dto.name,
+                description = dto.description,
+                price = dto.price,
+                rating = dto.rating,
+                category = dto.category
+            )
+        }
+
+        val saved = productRepository.saveAll(entities)
+
+        // 이벤트는 개별 발행 (이벤트 기반 ES 연동 유지)
+        saved.forEach { eventPublisher.publishEvent(ProductCreatedEvent(it)) }
+
+        return saved
+    }
+    
     @Transactional
     fun deleteProduct(id: Long) {
         productRepository.deleteById(id)
