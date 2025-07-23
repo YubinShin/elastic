@@ -26,6 +26,7 @@ spring:
 
 logging:
   level:
-    org.elasticsearch.client: TRACE  # Elasticsearch 요청 로그 확인용
-    org.hibernate.SQL: debug         # SQL 로그 확인용
-    org.hibernate.type.descriptor.sql.BasicBinder: trace  # 바인딩 값 출력
+    org.springframework.data.elasticsearch.client.WIRE: TRACE
+    co.elastic.clients.elasticsearch: TRACE
+    org.elasticsearch.client: TRACE
+

@@ -35,7 +35,7 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
     kapt("org.springframework.boot:spring-boot-configuration-processor")
-
+    implementation("org.elasticsearch:elasticsearch:8.17.4")
 }
 
 tasks.withType<Test> {

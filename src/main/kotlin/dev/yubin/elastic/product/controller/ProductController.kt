@@ -21,6 +21,15 @@ class ProductController(
         return ResponseEntity.ok(products)
     }
 
+    @GetMapping("/suggestions")
+    fun getSuggestions(
+        @RequestParam(defaultValue = "1") query: String,
+    ): ResponseEntity<List<String>> {
+
+        val suggestions = productService.getSuggestions(query)
+        return ResponseEntity.ok(suggestions)
+    }
+
     @PostMapping
     fun createProduct(@RequestBody dto: CreateProductRequestDto): ResponseEntity<Product> {
         val product = productService.createProduct(dto)
