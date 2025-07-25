@@ -2,13 +2,14 @@ package dev.yubin.elastic.product.domain
 
 import jakarta.persistence.*
 import java.io.Serializable
+import java.util.UUID
 
 @Entity
 @Table(name = "products")
 class Product(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+    @Column(nullable = false, updatable = false, length = 36)
+    val id: String = UUID.randomUUID().toString(),
 
     val name: String,
 

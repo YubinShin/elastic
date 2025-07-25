@@ -4,6 +4,7 @@ import dev.yubin.elastic.product.service.ProductService
 import dev.yubin.elastic.product.domain.Product
 import dev.yubin.elastic.product.domain.ProductDocument
 import dev.yubin.elastic.product.dto.CreateProductRequestDto
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -46,18 +47,18 @@ class ProductController(
     }
 
     @PostMapping
-    fun createProduct(@RequestBody dto: CreateProductRequestDto): ResponseEntity<Product> {
+    fun createProduct(@RequestBody @Valid dto: CreateProductRequestDto): ResponseEntity<Product> {
         val product = productService.createProduct(dto)
         return ResponseEntity.ok(product)
     }
 
     @PostMapping("/bulk")
-    fun createProducts(@RequestBody products: List<CreateProductRequestDto>): List<Product> {
-        return productService.createProducts(products)
+    fun createProducts(@RequestBody @Valid products: List<CreateProductRequestDto>): ResponseEntity<List<Product>> {
+        return ResponseEntity.ok(productService.createProducts(products))
     }
 
     @DeleteMapping("/{id}")
-    fun deleteProduct(@PathVariable id: Long): ResponseEntity<Void> {
+    fun deleteProduct(@PathVariable id: String): ResponseEntity<Void> {
         productService.deleteProduct(id)
         return ResponseEntity.noContent().build()
     }

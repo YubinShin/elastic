@@ -38,6 +38,10 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
     kapt("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.elasticsearch:elasticsearch:8.17.4")
+    implementation("org.springframework.data:spring-data-commons")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+
+
 }
 
 tasks.withType<Test> {
