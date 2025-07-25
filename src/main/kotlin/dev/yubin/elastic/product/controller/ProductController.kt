@@ -25,11 +25,11 @@ class ProductController(
     @GetMapping("/search")
     fun searchProducts(
         @RequestParam query: String,
-        @RequestParam category: String,
-        @RequestParam(defaultValue = "0.0") minPrice: Double,
-        @RequestParam(defaultValue = "1000000000.0") maxPrice: Double,
-        @RequestParam(defaultValue = "1") page: Int,
-        @RequestParam(defaultValue = "5") size: Int
+        @RequestParam(required = false) category: String?,
+        @RequestParam(required = false) minPrice: Double?,
+        @RequestParam(required = false) maxPrice: Double?,
+        @RequestParam(required = false) page: Int?,
+        @RequestParam(required = false) size: Int?
     ): ResponseEntity<List<ProductDocument>> {
 
         val products = productService.searchProducts(query, category, minPrice, maxPrice, page, size)

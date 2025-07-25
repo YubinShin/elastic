@@ -104,11 +104,16 @@ class ProductService(
     fun searchProducts(
         query: String,
         category: String?,
-        minPrice: Double,
-        maxPrice: Double,
-        page: Int,
-        size: Int
+        minPrice: Double?,
+        maxPrice: Double?,
+        page: Int?,
+        size: Int?
     ): List<ProductDocument> {
+
+        val resolvedMinPrice = minPrice ?: 0.0
+        val resolvedMaxPrice = maxPrice ?: 1_000_000_000.0
+        val resolvedPage = (page ?: 1).coerceAtLeast(1) // 1페이지 미만 방지
+        val resolvedSize = (size ?: 5).coerceIn(1, 100)  // 너무 큰 페이지 방지
 
         // multi_match 쿼리
         val multiMatchQuery: Query = MultiMatchQuery.of {
@@ -129,8 +134,8 @@ class ProductService(
 
         val priceRangeFilter = NumberRangeQuery.of {
             it.field("price")
-                .gte(minPrice)
-                .lte(maxPrice)
+                .gte(resolvedMinPrice)
+                .lte(resolvedMaxPrice)
         }._toRangeQuery()._toQuery()
         filters.add(priceRangeFilter)
 
@@ -159,7 +164,7 @@ class ProductService(
         val nativeQuery = NativeQuery.builder()
             .withQuery(boolQuery)
             .withHighlightQuery(highlightQuery)
-            .withPageable(PageRequest.of(page - 1, size))
+            .withPageable(PageRequest.of(resolvedPage - 1, resolvedSize))
             .build()
 
         // 검색 실행
@@ -167,17 +172,11 @@ class ProductService(
 
         return searchHits.searchHits.map { hit ->
             val product = hit.content
-
-            // 하이라이트 필드 가져오기
-            val highlights = hit.highlightFields
-            val highlightedName = highlights["name"]?.firstOrNull()
-
+            val highlightedName = hit.highlightFields["name"]?.firstOrNull()
             if (highlightedName != null) {
                 product.name = highlightedName
             }
-
             product
         }
-
     }
 }
