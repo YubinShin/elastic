@@ -2,6 +2,7 @@ package dev.yubin.elastic.product.controller
 
 import dev.yubin.elastic.product.service.ProductService
 import dev.yubin.elastic.product.domain.Product
+import dev.yubin.elastic.product.domain.ProductDocument
 import dev.yubin.elastic.product.dto.CreateProductRequestDto
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -21,9 +22,23 @@ class ProductController(
         return ResponseEntity.ok(products)
     }
 
+    @GetMapping("/search")
+    fun searchProducts(
+        @RequestParam query: String,
+        @RequestParam category: String,
+        @RequestParam(defaultValue = "0.0") minPrice: Double,
+        @RequestParam(defaultValue = "1000000000.0") maxPrice: Double,
+        @RequestParam(defaultValue = "1") page: Int,
+        @RequestParam(defaultValue = "5") size: Int
+    ): ResponseEntity<List<ProductDocument>> {
+
+        val products = productService.searchProducts(query, category, minPrice, maxPrice, page, size)
+        return ResponseEntity.ok(products)
+    }
+
     @GetMapping("/suggestions")
     fun getSuggestions(
-        @RequestParam(defaultValue = "1") query: String,
+        @RequestParam() query: String,
     ): ResponseEntity<List<String>> {
 
         val suggestions = productService.getSuggestions(query)

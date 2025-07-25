@@ -1,8 +1,11 @@
 package dev.yubin.elastic.product.service
 
+import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery
 import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType
 import co.elastic.clients.elasticsearch._types.query_dsl.MultiMatchQuery
+import co.elastic.clients.elasticsearch._types.query_dsl.NumberRangeQuery
 import co.elastic.clients.elasticsearch._types.query_dsl.Query
+import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery
 import dev.yubin.elastic.product.domain.Product
 import dev.yubin.elastic.product.domain.ProductDocument
 import dev.yubin.elastic.product.domain.event.ProductCreatedEvent
@@ -15,6 +18,10 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.data.elasticsearch.client.elc.NativeQuery
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
+import org.springframework.data.elasticsearch.core.query.HighlightQuery
+import org.springframework.data.elasticsearch.core.query.highlight.Highlight
+import org.springframework.data.elasticsearch.core.query.highlight.HighlightField
+import org.springframework.data.elasticsearch.core.query.highlight.HighlightParameters
 
 @Service
 class ProductService(
@@ -92,5 +99,85 @@ class ProductService(
     fun deleteProduct(id: Long) {
         productRepository.deleteById(id)
         eventPublisher.publishEvent(ProductDeletedEvent(id))
+    }
+
+    fun searchProducts(
+        query: String,
+        category: String?,
+        minPrice: Double,
+        maxPrice: Double,
+        page: Int,
+        size: Int
+    ): List<ProductDocument> {
+
+        // multi_match 쿼리
+        val multiMatchQuery: Query = MultiMatchQuery.of {
+            it.query(query)
+                .fields("name^3", "description^1", "category^2")
+                .fuzziness("AUTO")
+        }._toQuery()
+
+        // filter 쿼리 조립
+        val filters = mutableListOf<Query>()
+
+        if (!category.isNullOrBlank()) {
+            val categoryFilter = TermQuery.of {
+                it.field("category.raw").value(category)
+            }._toQuery()
+            filters.add(categoryFilter)
+        }
+
+        val priceRangeFilter = NumberRangeQuery.of {
+            it.field("price")
+                .gte(minPrice)
+                .lte(maxPrice)
+        }._toRangeQuery()._toQuery()
+        filters.add(priceRangeFilter)
+
+        // rating > 4.0
+        val ratingShould = NumberRangeQuery.of {
+            it.field("rating").gt(4.0)
+        }._toRangeQuery()._toQuery()
+
+        // bool query 조합
+        val boolQuery = BoolQuery.of {
+            it.must(multiMatchQuery)
+                .filter(filters)
+                .should(ratingShould)
+        }._toQuery()
+
+        // Highlight 설정
+        val highlightParams = HighlightParameters.builder()
+            .withPreTags("<b>")
+            .withPostTags("</b>")
+            .build()
+
+        val highlight = Highlight(highlightParams, listOf(HighlightField("name")))
+        val highlightQuery = HighlightQuery(highlight, ProductDocument::class.java)
+
+        // NativeQuery 조립
+        val nativeQuery = NativeQuery.builder()
+            .withQuery(boolQuery)
+            .withHighlightQuery(highlightQuery)
+            .withPageable(PageRequest.of(page - 1, size))
+            .build()
+
+        // 검색 실행
+        val searchHits = elasticsearchOperations.search(nativeQuery, ProductDocument::class.java)
+
+        return searchHits.searchHits.map { hit ->
+            val product = hit.content
+
+            // 하이라이트 필드 가져오기
+            val highlights = hit.highlightFields
+            val highlightedName = highlights["name"]?.firstOrNull()
+
+            if (highlightedName != null) {
+                product.name = highlightedName
+            }
+
+            product
+        }
+
     }
 }
