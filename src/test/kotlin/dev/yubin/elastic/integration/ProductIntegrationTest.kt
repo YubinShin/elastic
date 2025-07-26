@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.elasticsearch.client.elc.NativeQuery
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
 import org.springframework.http.MediaType
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.web.servlet.MockMvc
@@ -20,11 +21,13 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.testcontainers.containers.MySQLContainer
 import org.testcontainers.elasticsearch.ElasticsearchContainer
+import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 
 @Testcontainers
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 class ProductIntegrationTest {
 
     @Autowired
@@ -40,35 +43,41 @@ class ProductIntegrationTest {
 
     companion object {
         class KMySQLContainer : MySQLContainer<KMySQLContainer>("mysql:8.0")
-        class KElasticsearchContainer :
-            ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:8.17.4")
 
-        private val mysql = KMySQLContainer().apply {
+        class KElasticsearchContainer :
+            ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:8.11.3") {
+            init {
+                withEnv("discovery.type", "single-node")
+                withEnv("xpack.security.enabled", "false")
+                withStartupAttempts(3)
+                withStartupTimeout(java.time.Duration.ofSeconds(180))
+                waitingFor(
+                    org.testcontainers.containers.wait.strategy.Wait.forHttp("/_cluster/health")
+                        .forStatusCode(200)
+                        .withStartupTimeout(java.time.Duration.ofSeconds(180))
+                )
+            }
+        }
+
+        @JvmStatic
+        @Container
+        val mysql = KMySQLContainer().apply {
             withDatabaseName("test-db")
             withUsername("test")
             withPassword("test")
-            start()
-            System.setProperty("spring.datasource.url", jdbcUrl)
-            System.setProperty("spring.datasource.username", username)
-            System.setProperty("spring.datasource.password", password)
         }
 
-
-        val elastic = KElasticsearchContainer().apply {
-            withEnv("discovery.type", "single-node")
-            start()
-        }
+        @JvmStatic
+        @Container
+        val elastic = KElasticsearchContainer()
 
         @JvmStatic
         @DynamicPropertySource
         fun overrideProps(registry: DynamicPropertyRegistry) {
+            registry.add("spring.datasource.url") { mysql.jdbcUrl }
+            registry.add("spring.datasource.username") { mysql.username }
+            registry.add("spring.datasource.password") { mysql.password }
             registry.add("spring.elasticsearch.uris") { elastic.httpHostAddress }
-        }
-
-        init {
-            // 사용하지 않으면 경고 발생하므로 명시적으로 참조
-            println("MySQL started at ${mysql.jdbcUrl}")
-            println("Elasticsearch started at ${elastic.httpHostAddress}")
         }
     }
 
