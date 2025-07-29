@@ -6,6 +6,7 @@ import dev.yubin.elastic.product.domain.ProductDocument
 import dev.yubin.elastic.product.dto.CreateProductRequestDto
 import dev.yubin.elastic.product.repository.ProductRepository
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -13,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.elasticsearch.client.elc.NativeQuery
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
 import org.springframework.http.MediaType
+import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
@@ -21,7 +23,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.MySQLContainer
-import org.testcontainers.elasticsearch.ElasticsearchContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.DockerImageName
@@ -30,18 +31,9 @@ import org.testcontainers.utility.DockerImageName
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class ProductIntegrationTest {
 
-    @Autowired
-    lateinit var mockMvc: MockMvc
-
-    @Autowired
-    lateinit var productRepository: ProductRepository
-
-    @Autowired
-    lateinit var elasticsearchOperations: ElasticsearchOperations
-
-    val objectMapper = jacksonObjectMapper()
 
     companion object {
         class KMySQLContainer : MySQLContainer<KMySQLContainer>("mysql:8.0")
@@ -74,6 +66,7 @@ class ProductIntegrationTest {
             )
         }
 
+
         @JvmStatic
         @DynamicPropertySource
         fun overrideProps(registry: DynamicPropertyRegistry) {
@@ -84,6 +77,26 @@ class ProductIntegrationTest {
                 "http://${elasticsearchContainer.host}:${elasticsearchContainer.getMappedPort(9200)}"
             }
         }
+    }
+
+    @Autowired
+    lateinit var mockMvc: MockMvc
+
+    @Autowired
+    lateinit var productRepository: ProductRepository
+
+    @Autowired
+    lateinit var elasticsearchOperations: ElasticsearchOperations
+
+    val objectMapper = jacksonObjectMapper()
+
+    @BeforeEach
+    fun refresh() {
+        val indexOps = elasticsearchOperations.indexOps(ProductDocument::class.java)
+        if (indexOps.exists()) indexOps.delete()
+        indexOps.create()
+        indexOps.putMapping()
+        indexOps.refresh()
     }
 
     @Test
@@ -123,12 +136,15 @@ class ProductIntegrationTest {
     @Test
     fun `should return products from Elasticsearch`() {
         val doc = ProductDocument("123", "김말이", "추억의 간식", 1500, 4.0, "간식")
+
         elasticsearchOperations.save(doc)
+        elasticsearchOperations.indexOps(ProductDocument::class.java).refresh()
 
         mockMvc.perform(get("/products/search").param("query", "김"))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.size()").value(1))
             .andExpect(jsonPath("$[0].name").value("김말이"))
+            .andExpect(jsonPath("$[0].highlightedName").value("<b>김</b>말이"))
     }
 
     @Test
