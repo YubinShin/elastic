@@ -87,6 +87,7 @@ class ProductServiceTest {
         }
     }
 
+
     @Nested
     @DisplayName("searchProduct")
     inner class SearchProductTest {
@@ -112,7 +113,8 @@ class ProductServiceTest {
 
             // then
             assertThat(result).hasSize(1)
-            assertThat(result[0].name).isEqualTo("<b>돌김</b>")
+            assertThat(result[0].name).isEqualTo("돌김")
+            assertThat(result[0].highlightedName).isEqualTo("<b>돌김</b>")
         }
 
         @Test
@@ -135,6 +137,7 @@ class ProductServiceTest {
 
             assertThat(result).hasSize(1)
             assertThat(result[0].name).isEqualTo("돌김")
+            assertThat(result[0].highlightedName).isNull()
         }
 
         @Test
@@ -154,7 +157,7 @@ class ProductServiceTest {
 
             // then
             assertThat(result).hasSize(1)
-            assertThat(result[0].name).isEqualTo("<b>돌김</b>")
+            assertThat(result[0].highlightedName).isEqualTo("<b>돌김</b>")
             assertThat(result[0].price).isBetween(1000, 10000)
         }
 
@@ -169,9 +172,8 @@ class ProductServiceTest {
             }
 
             val queryCaptor = argumentCaptor<Query>()
-            whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(ProductDocument::class.java))).thenReturn(
-                hits
-            )
+            whenever(elasticsearchOperations.search(queryCaptor.capture(), eq(ProductDocument::class.java)))
+                .thenReturn(hits)
 
             // when
             productService.searchProducts("돌김", null, null, null, null, null)
@@ -180,8 +182,8 @@ class ProductServiceTest {
             val nativeQuery = queryCaptor.firstValue as NativeQuery
             val pageable = nativeQuery.pageable
 
-            assertThat(pageable.pageNumber).isEqualTo(0) // page=1 이면 index 0
-            assertThat(pageable.pageSize).isEqualTo(5)   // 기본값
+            assertThat(pageable.pageNumber).isEqualTo(0) // page=1 → index=0
+            assertThat(pageable.pageSize).isEqualTo(5)   // default
         }
     }
 

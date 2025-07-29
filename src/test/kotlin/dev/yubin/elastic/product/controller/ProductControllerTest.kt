@@ -6,6 +6,7 @@ import java.util.UUID
 import dev.yubin.elastic.product.domain.Product
 import dev.yubin.elastic.product.domain.ProductDocument
 import dev.yubin.elastic.product.dto.CreateProductRequestDto
+import dev.yubin.elastic.product.dto.ProductSearchResultDto
 import dev.yubin.elastic.product.service.ProductService
 
 import org.junit.jupiter.api.DisplayName
@@ -75,8 +76,24 @@ class ProductControllerTest {
         fun should_return_search_results_when_query_only_provided() {
             // given
             val results = listOf(
-                ProductDocument("1", "김A", "A 상품입니다", 1000, 4.2, "식품"),
-                ProductDocument("2", "김B", "B 상품입니다", 2000, 4.5, "식품")
+                ProductSearchResultDto(
+                    id = "11111111-1111-1111-1111-111111111111",
+                    name = "김A",
+                    highlightedName = "<b>김</b>A",
+                    description = "A 상품입니다",
+                    price = 1000,
+                    rating = 4.2,
+                    category = "식품"
+                ),
+                ProductSearchResultDto(
+                    id = "11111111-1111-1111-1111-111111111110",
+                    name = "김B",
+                    highlightedName = "<b>김</b>B",
+                    description = "B 상품입니다",
+                    price = 2000,
+                    rating = 4.5,
+                    category = "식품"
+                )
             )
 
             whenever(
@@ -95,14 +112,24 @@ class ProductControllerTest {
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.size()").value(2))
                 .andExpect(jsonPath("$[0].name").value("김A"))
+                .andExpect(jsonPath("$[0].highlightedName").value("<b>김</b>A"))
                 .andExpect(jsonPath("$[1].name").value("김B"))
+                .andExpect(jsonPath("$[1].highlightedName").value("<b>김</b>B"))
         }
 
         @Test
         fun should_return_filtered_results_when_category_and_price_given() {
             // given
             val results = listOf(
-                ProductDocument("3", "김C", "C 상품입니다", 1500, 4.7, "간식")
+                ProductSearchResultDto(
+                    id = "11111111-1111-1111-1111-111111111100",
+                    name = "김C",
+                    highlightedName = "<b>김</b>C",
+                    description = "C 상품입니다",
+                    price = 1500,
+                    rating = 4.5,
+                    category = "간식"
+                )
             )
 
             whenever(
@@ -127,6 +154,7 @@ class ProductControllerTest {
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.size()").value(1))
                 .andExpect(jsonPath("$[0].name").value("김C"))
+                .andExpect(jsonPath("$[0].highlightedName").value("<b>김</b>C"))
                 .andExpect(jsonPath("$[0].category").value("간식"))
                 .andExpect(jsonPath("$[0].price").value(1500))
         }

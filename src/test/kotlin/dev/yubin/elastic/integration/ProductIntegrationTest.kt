@@ -19,10 +19,12 @@ import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.MySQLContainer
 import org.testcontainers.elasticsearch.ElasticsearchContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
+import org.testcontainers.utility.DockerImageName
 
 @Testcontainers
 @SpringBootTest
@@ -44,21 +46,6 @@ class ProductIntegrationTest {
     companion object {
         class KMySQLContainer : MySQLContainer<KMySQLContainer>("mysql:8.0")
 
-        class KElasticsearchContainer :
-            ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:8.10.2") {
-            init {
-                withEnv("discovery.type", "single-node")
-                withEnv("xpack.security.enabled", "false")
-                withEnv("ES_JAVA_OPTS", "-Xms512m -Xmx512m")
-                withStartupAttempts(3)
-                withStartupTimeout(java.time.Duration.ofSeconds(180))
-                waitingFor(
-                    org.testcontainers.containers.wait.strategy.Wait.forHttp("/_cluster/health")
-                        .forStatusCode(200)
-                        .withStartupTimeout(java.time.Duration.ofSeconds(180))
-                )
-            }
-        }
 
         @JvmStatic
         @Container
@@ -68,9 +55,24 @@ class ProductIntegrationTest {
             withPassword("test")
         }
 
+
         @JvmStatic
         @Container
-        val elastic = KElasticsearchContainer()
+        val elasticsearchContainer = GenericContainer<Nothing>(
+            DockerImageName.parse("my-es-with-nori:8.17.4")
+        ).apply {
+            withExposedPorts(9200)
+            withEnv("discovery.type", "single-node")
+            withEnv("xpack.security.enabled", "false")
+            withEnv("xpack.security.http.ssl.enabled", "false")
+            withStartupAttempts(3)
+            withStartupTimeout(java.time.Duration.ofSeconds(180))
+            waitingFor(
+                org.testcontainers.containers.wait.strategy.Wait.forHttp("/_cluster/health")
+                    .forStatusCode(200)
+                    .withStartupTimeout(java.time.Duration.ofSeconds(180))
+            )
+        }
 
         @JvmStatic
         @DynamicPropertySource
@@ -79,10 +81,8 @@ class ProductIntegrationTest {
             registry.add("spring.datasource.username") { mysql.username }
             registry.add("spring.datasource.password") { mysql.password }
             registry.add("spring.elasticsearch.uris") {
-                "http://${elastic.host}:${elastic.getMappedPort(9200)}"
+                "http://${elasticsearchContainer.host}:${elasticsearchContainer.getMappedPort(9200)}"
             }
-
-            // registry.add("spring.elasticsearch.uris") { elastic.httpHostAddress }
         }
     }
 
