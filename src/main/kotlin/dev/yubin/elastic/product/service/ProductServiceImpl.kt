@@ -68,7 +68,7 @@ class ProductServiceImpl(
         productRepository.deleteById(id)
         eventPublisher.publishEvent(ProductDeletedEvent(id))
     }
-    
+
     override fun getProducts(page: Int, size: Int): MutableList<Product?> {
         val pageable = PageRequest.of(page - 1, size)
         return productRepository.findAll(pageable).content
@@ -168,14 +168,11 @@ class ProductServiceImpl(
 
         // 검색 실행
         val searchHits = elasticsearchOperations.search(nativeQuery, ProductDocument::class.java)
-
         return searchHits.searchHits.map { hit ->
             val product = hit.content
             val highlightedName = hit.highlightFields["name"]?.firstOrNull()
-            if (highlightedName != null) {
-                product.name = highlightedName
-            }
-            product
+            product.copy(name = highlightedName ?: product.name)
         }
+
     }
 }
