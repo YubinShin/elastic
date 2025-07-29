@@ -11,6 +11,7 @@ import dev.yubin.elastic.product.domain.ProductDocument
 import dev.yubin.elastic.product.domain.event.ProductCreatedEvent
 import dev.yubin.elastic.product.domain.event.ProductDeletedEvent
 import dev.yubin.elastic.product.dto.CreateProductRequestDto
+import dev.yubin.elastic.product.dto.ProductSearchResultDto
 import dev.yubin.elastic.product.repository.ProductRepository
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.PageRequest
@@ -107,7 +108,7 @@ class ProductServiceImpl(
         maxPrice: Double?,
         page: Int?,
         size: Int?
-    ): List<ProductDocument> {
+    ): List<ProductSearchResultDto> {
 
         val resolvedMinPrice = minPrice ?: 0.0
         val resolvedMaxPrice = maxPrice ?: 1_000_000_000.0
@@ -168,10 +169,20 @@ class ProductServiceImpl(
 
         // 검색 실행
         val searchHits = elasticsearchOperations.search(nativeQuery, ProductDocument::class.java)
+
         return searchHits.searchHits.map { hit ->
             val product = hit.content
             val highlightedName = hit.highlightFields["name"]?.firstOrNull()
-            product.copy(name = highlightedName ?: product.name)
+
+            ProductSearchResultDto(
+                id = product.id,
+                name = product.name,
+                highlightedName = highlightedName,
+                description = product.description,
+                price = product.price,
+                rating = product.rating,
+                category = product.category
+            )
         }
 
     }

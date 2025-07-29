@@ -2,8 +2,8 @@ package dev.yubin.elastic.product.controller
 
 import dev.yubin.elastic.product.service.ProductService
 import dev.yubin.elastic.product.domain.Product
-import dev.yubin.elastic.product.domain.ProductDocument
 import dev.yubin.elastic.product.dto.CreateProductRequestDto
+import dev.yubin.elastic.product.dto.ProductSearchResultDto
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -31,7 +31,7 @@ class ProductController(
         @RequestParam(required = false) maxPrice: Double?,
         @RequestParam(required = false) page: Int?,
         @RequestParam(required = false) size: Int?
-    ): ResponseEntity<List<ProductDocument>> {
+    ): ResponseEntity<List<ProductSearchResultDto>> {
 
         val products = productService.searchProducts(query, category, minPrice, maxPrice, page, size)
         return ResponseEntity.ok(products)

@@ -1,8 +1,8 @@
 package dev.yubin.elastic.product.service
 
 import dev.yubin.elastic.product.domain.Product
-import dev.yubin.elastic.product.domain.ProductDocument
 import dev.yubin.elastic.product.dto.CreateProductRequestDto
+import dev.yubin.elastic.product.dto.ProductSearchResultDto
 
 interface ProductService {
     fun createProducts(products: List<CreateProductRequestDto>): List<Product>
@@ -22,5 +22,5 @@ interface ProductService {
         maxPrice: Double?,
         page: Int?,
         size: Int?
-    ): List<ProductDocument>
+    ): List<ProductSearchResultDto>
 }
