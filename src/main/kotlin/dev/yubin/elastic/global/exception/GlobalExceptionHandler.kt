@@ -1,5 +1,6 @@
 package dev.yubin.elastic.global.exception
 
+import jakarta.validation.ConstraintViolationException
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -22,6 +23,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception::class)
     fun handleGenericException(ex: Exception): ResponseEntity<ErrorResponse> {
+        ex.printStackTrace()
         val response = ErrorResponse(code = "UNKNOWN", message = "알 수 없는 오류")
         return ResponseEntity.internalServerError().body(response)
     }
@@ -38,4 +40,25 @@ class GlobalExceptionHandler {
         )
         return ResponseEntity.badRequest().body(response)
     }
+
+    @ExceptionHandler(ConstraintViolationException::class)
+    fun handleConstraintViolationException(ex: ConstraintViolationException): ResponseEntity<ErrorResponse> {
+        val message = ex.constraintViolations.joinToString(", ") {
+            "${it.propertyPath}: ${it.message}"
+        }
+
+        val response = ErrorResponse(
+            code = "INVALID_REQUEST",
+            message = message
+        )
+
+        return ResponseEntity.badRequest().body(response)
+    }
+
+
+//    @ExceptionHandler(Exception::class)
+//    fun handleGenericException(ex: Exception): ResponseEntity<ErrorResponse> {
+//        ex.printStackTrace() // 👈 이거 추가해봐 테스트 시
+//        ...
+//    }
 }

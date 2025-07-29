@@ -6,10 +6,12 @@ import dev.yubin.elastic.product.dto.CreateProductRequestDto
 import dev.yubin.elastic.product.dto.ProductSearchResultDto
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("products")
+@Validated
 class ProductController(
     private val productService: ProductService
 ) {
@@ -53,7 +55,7 @@ class ProductController(
     }
 
     @PostMapping("/bulk")
-    fun createProducts(@RequestBody @Valid products: List<CreateProductRequestDto>): ResponseEntity<List<Product>> {
+    fun createProducts(@RequestBody products: List<@Valid CreateProductRequestDto>): ResponseEntity<List<Product>> {
         return ResponseEntity.ok(productService.createProducts(products))
     }
 
