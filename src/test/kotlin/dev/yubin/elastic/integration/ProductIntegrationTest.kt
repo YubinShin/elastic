@@ -45,10 +45,11 @@ class ProductIntegrationTest {
         class KMySQLContainer : MySQLContainer<KMySQLContainer>("mysql:8.0")
 
         class KElasticsearchContainer :
-            ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:8.11.3") {
+            ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:8.10.2") {
             init {
                 withEnv("discovery.type", "single-node")
                 withEnv("xpack.security.enabled", "false")
+                withEnv("ES_JAVA_OPTS", "-Xms512m -Xmx512m")
                 withStartupAttempts(3)
                 withStartupTimeout(java.time.Duration.ofSeconds(180))
                 waitingFor(
@@ -77,7 +78,11 @@ class ProductIntegrationTest {
             registry.add("spring.datasource.url") { mysql.jdbcUrl }
             registry.add("spring.datasource.username") { mysql.username }
             registry.add("spring.datasource.password") { mysql.password }
-            registry.add("spring.elasticsearch.uris") { elastic.httpHostAddress }
+            registry.add("spring.elasticsearch.uris") {
+                "http://${elastic.host}:${elastic.getMappedPort(9200)}"
+            }
+
+            // registry.add("spring.elasticsearch.uris") { elastic.httpHostAddress }
         }
     }
 
