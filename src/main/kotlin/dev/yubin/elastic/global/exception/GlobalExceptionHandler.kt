@@ -3,6 +3,7 @@ package dev.yubin.elastic.global.exception
 import io.swagger.v3.oas.annotations.Hidden
 import jakarta.validation.ConstraintViolationException
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -25,13 +26,14 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception::class)
     fun handleGenericException(ex: Exception): ResponseEntity<ErrorResponse> {
-        ex.printStackTrace()
         val response = ErrorResponse(code = "UNKNOWN", message = "알 수 없는 오류")
         return ResponseEntity.internalServerError().body(response)
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidationException(ex: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
+        ex.printStackTrace()
+
         val errorMessages = ex.bindingResult
             .fieldErrors
             .joinToString(", ") { "${it.field}: ${it.defaultMessage}" }
@@ -45,6 +47,8 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(ConstraintViolationException::class)
     fun handleConstraintViolationException(ex: ConstraintViolationException): ResponseEntity<ErrorResponse> {
+        ex.printStackTrace()
+
         val message = ex.constraintViolations.joinToString(", ") {
             "${it.propertyPath}: ${it.message}"
         }
@@ -57,10 +61,14 @@ class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(response)
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException::class)
+    fun handleUnreadableJson(ex: HttpMessageNotReadableException): ResponseEntity<ErrorResponse> {
+        ex.printStackTrace()
+        val response = ErrorResponse(
+            code = "INVALID_JSON",
+            message = "요청 바디가 잘못되었습니다."
+        )
+        return ResponseEntity.badRequest().body(response)
+    }
 
-//    @ExceptionHandler(Exception::class)
-//    fun handleGenericException(ex: Exception): ResponseEntity<ErrorResponse> {
-//        ex.printStackTrace() // 👈 이거 추가해봐 테스트 시
-//        ...
-//    }
 }
