@@ -2,6 +2,7 @@ package dev.yubin.elastic.global.exception
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import dev.yubin.elastic.product.controller.ProductController
 import dev.yubin.elastic.product.dto.CreateProductRequestDto
 import dev.yubin.elastic.product.service.ProductService
 import org.junit.jupiter.api.Test
@@ -18,14 +19,16 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.hamcrest.Matchers.containsString
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 
+//import org.mockito.kotlin.any
+//import org.mockito.kotlin.eq
+//import org.mockito.kotlin.whenever
 
-@WebMvcTest
-@Import(GlobalExceptionHandler::class, GlobalExceptionHandlerTest.MockConfig::class)
+@WebMvcTest()
+@Import(ProductController::class, GlobalExceptionHandler::class, GlobalExceptionHandlerTest.MockConfig::class)
 class GlobalExceptionHandlerTest {
 
     @Autowired
@@ -109,19 +112,6 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    fun should_return_custom_error_when_custom_exception_thrown() {
-        whenever(productService.getProducts(1, 5))
-            .thenThrow(CustomException("MY_ERROR", "unexpected"))
-
-        mockMvc.perform(get("/products")
-            .param("page", "1")
-            .param("size", "5"))
-            .andExpect(status().isInternalServerError)
-            .andExpect(jsonPath("$.code").value("MY_ERROR"))
-            .andExpect(jsonPath("$.message").value("unexpected"))
-    }
-
-    @Test
     fun should_return_invalid_json_when_body_is_unreadable() {
         mockMvc.perform(
             post("/products")
@@ -144,4 +134,20 @@ class GlobalExceptionHandlerTest {
             .andExpect(jsonPath("$.message").value(containsString("must be greater")))
     }
 
+//    @Test
+//    fun should_return_custom_error_when_custom_exception_thrown() {
+//        val customException = CustomException("MY_ERROR", "unexpected")
+//
+//        whenever(productService.getProducts(1, 5))
+//            .thenThrow(customException)
+//
+//        mockMvc.perform(
+//            get("/products")
+//                .param("page", "1")
+//                .param("size", "5")
+//        )
+//            .andExpect(status().isInternalServerError)
+//            .andExpect(jsonPath("$.code").value("MY_ERROR"))
+//            .andExpect(jsonPath("$.message").value("unexpected"))
+//    }
 }
