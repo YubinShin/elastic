@@ -17,6 +17,12 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import org.hamcrest.Matchers.containsString
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+
 
 @WebMvcTest
 @Import(GlobalExceptionHandler::class, GlobalExceptionHandlerTest.MockConfig::class)
@@ -101,4 +107,41 @@ class GlobalExceptionHandlerTest {
                 jsonPath("$.message") { value("unexpected") }
             }
     }
+
+    @Test
+    fun should_return_custom_error_when_custom_exception_thrown() {
+        whenever(productService.getProducts(1, 5))
+            .thenThrow(CustomException("MY_ERROR", "unexpected"))
+
+        mockMvc.perform(get("/products")
+            .param("page", "1")
+            .param("size", "5"))
+            .andExpect(status().isInternalServerError)
+            .andExpect(jsonPath("$.code").value("MY_ERROR"))
+            .andExpect(jsonPath("$.message").value("unexpected"))
+    }
+
+    @Test
+    fun should_return_invalid_json_when_body_is_unreadable() {
+        mockMvc.perform(
+            post("/products")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{ \"name\": \"test\" ") // 닫는 중괄호 없는 malformed JSON
+        ).andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.code").value("INVALID_JSON"))
+            .andExpect(jsonPath("$.message").value("요청 바디가 잘못되었습니다."))
+    }
+
+    @Test
+    fun should_return_invalid_request_when_constraint_violated() {
+        mockMvc.perform(
+            get("/products")
+                .param("page", "-1")
+                .param("size", "10")
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
+            .andExpect(jsonPath("$.message").value(containsString("must be greater")))
+    }
+
 }
