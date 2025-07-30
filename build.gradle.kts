@@ -29,8 +29,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     kapt("org.springframework.boot:spring-boot-configuration-processor")
+
 
     // Kotlin & Jackson
     implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -39,7 +41,7 @@ dependencies {
 
     // Database & Elasticsearch
     runtimeOnly("com.mysql:mysql-connector-j")
-    implementation("org.elasticsearch:elasticsearch:8.17.4")
+    implementation("org.elasticsearch:elasticsearch:8.11.4")
     implementation("org.springframework.data:spring-data-commons")
 
     // Testing
@@ -64,11 +66,11 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 
 tasks.withType<Test> {
     useJUnitPlatform()
-    finalizedBy("jacocoTestReport") // 테스트 후 커버리지 리포트 자동 실행
+    finalizedBy("jacocoTestReport")
 }
 
 tasks.jacocoTestReport {
-    dependsOn(tasks.named<Test>("test")) // ✅ 여기를 이렇게 바꿔줘야 해
+    dependsOn(tasks.named<Test>("test"))
 
     reports {
         xml.required.set(true)
@@ -88,4 +90,12 @@ noArg {
 allOpen {
     annotation("org.springframework.boot.test.context.SpringBootTest")
     annotation("org.junit.jupiter.api.Test") // 테스트 클래스 열기
+}
+
+configurations.all {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.springdoc") {
+            useVersion("2.5.0")
+        }
+    }
 }

@@ -1,12 +1,14 @@
 package dev.yubin.elastic.global.exception
 
+import io.swagger.v3.oas.annotations.Hidden
 import jakarta.validation.ConstraintViolationException
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 
-@RestControllerAdvice
+@RestControllerAdvice()
+@Hidden
 class GlobalExceptionHandler {
 
     @ExceptionHandler(CustomException::class)

@@ -23,6 +23,23 @@ spring:
     uris: http://localhost:9200
 #    index:
 #      auto-create: false
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: method
+    display-request-duration: true
+    try-it-out-enabled: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+
+  info:
+    title: Product API
+    description: 상품 검색/등록/추천을 위한 RESTful API 문서
+    version: 1.0.0
+
 
 logging:
   level:
