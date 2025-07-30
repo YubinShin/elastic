@@ -97,7 +97,7 @@ class ProductServiceImpl(
         val hits = elasticsearchOperations.search(nativeQuery, ProductDocument::class.java)
 
         // 결과에서 name 필드만 추출
-        return hits.map { it.content.name }.toList()
+        return hits.searchHits.map { it.content.name }
     }
 
 

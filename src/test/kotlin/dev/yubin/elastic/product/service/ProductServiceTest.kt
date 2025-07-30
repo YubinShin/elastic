@@ -17,6 +17,7 @@ import org.springframework.data.elasticsearch.core.ElasticsearchOperations
 import org.springframework.data.elasticsearch.core.SearchHit
 import org.springframework.data.elasticsearch.core.SearchHits
 import org.springframework.data.elasticsearch.core.query.Query
+import org.springframework.data.util.Streamable
 import org.mockito.ArgumentMatchers.any as anyObj
 
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores::class)
@@ -190,68 +191,62 @@ class ProductServiceTest {
     @Nested
     @DisplayName("suggestProduct")
     inner class SuggestProductTest {
-//        /** 검색어 자동 완성 시 검색 결과가 존재 하는 경우 */
-//        @Test
-//        fun should_return_suggestions_when_matches_exist() {
-//            // given
-//            val doc1 = dummyProduct(name = "돌김 도시락")
-//            val doc2 = dummyProduct(name = "돌김밥 세트")
-//            val hit1 = hitOf(doc1)
-//            val hit2 = hitOf(doc2)
-//
-////            val hits: SearchHits<ProductDocument> = mock {
-////                on { map(any<(SearchHit<ProductDocument>) -> String>()) } doAnswer { invocation ->
-////                    @Suppress("UNCHECKED_CAST")
-////                    val mapper = invocation.arguments[0] as (SearchHit<ProductDocument>) -> String
-////                    Streamable.of(listOf(
-////                        mapper(hit1),
-////                        mapper(hit2)
-////                    ))
-////                }
-////            }
-//            val hits: SearchHits<ProductDocument> = mock {
-//                on { searchHits } doReturn listOf(hit1, hit2)
-//            }
-//            whenever(elasticsearchOperations.search(any<Query>(), eq(ProductDocument::class.java)))
-//                .thenReturn(hits)
-//
-//            // when
-//            val result = productService.getSuggestions("돌김")
-//
-//            // then
-//            assertThat(result).containsExactly("돌김 도시락", "돌김밥 세트")
-//        }
-//
-//        @Test
-//        fun should_use_default_pagination_when_suggestions_requested() {
-//            // given
-//            val doc = dummyProduct(name = "돌김 도시락")
-//            val hit = hitOf(doc)
-//
-//            val hits: SearchHits<ProductDocument> = mock {
-//                on { map(any<(SearchHit<ProductDocument>) -> String>()) } doAnswer { invocation ->
-//                    @Suppress("UNCHECKED_CAST")
-//                    val mapper = invocation.arguments[0] as (SearchHit<ProductDocument>) -> String
-//                    Streamable.of(listOf(mapper(hit)))
-//                }
-//            }
-//
-//
-//            val queryCaptor = argumentCaptor<Query>()
-//            whenever(
-//                elasticsearchOperations.search(queryCaptor.capture(), eq(ProductDocument::class.java))
-//            ).thenReturn(hits)
-//
-//            // when
-//            productService.getSuggestions("돌김")
-//
-//            // then
-//            val nativeQuery = queryCaptor.firstValue as NativeQuery
-//            val pageable = nativeQuery.pageable
-//
-//            assertThat(pageable.pageNumber).isEqualTo(0)
-//            assertThat(pageable.pageSize).isEqualTo(5)
-//        }
+        /** 검색어 자동 완성 시 검색 결과가 존재 하는 경우 */
+        @Test
+        fun should_return_suggestions_when_matches_exist() {
+            // given
+            val doc1 = dummyProduct(name = "돌김 도시락")
+            val doc2 = dummyProduct(name = "돌김밥 세트")
+
+            val hit1 = mock<SearchHit<ProductDocument>> {
+                on { content } doReturn doc1
+            }
+            val hit2 = mock<SearchHit<ProductDocument>> {
+                on { content } doReturn doc2
+            }
+
+            val hits: SearchHits<ProductDocument> = mock {
+                on { searchHits } doReturn listOf(hit1, hit2)
+            }
+
+            whenever(elasticsearchOperations.search(any<Query>(), eq(ProductDocument::class.java)))
+                .thenReturn(hits)
+
+            // when
+            val result = productService.getSuggestions("돌김")
+
+            // then
+            assertThat(result).containsExactly("돌김 도시락", "돌김밥 세트")
+        }
+
+        @Test
+        fun should_use_default_pagination_when_suggestions_requested() {
+            // given
+            val doc = dummyProduct(name = "돌김 도시락")
+            val hit = mock<SearchHit<ProductDocument>> {
+                on { content } doReturn doc
+            }
+
+            val hits: SearchHits<ProductDocument> = mock {
+                on { searchHits } doReturn listOf(hit)
+            }
+
+            val queryCaptor = argumentCaptor<Query>()
+            whenever(
+                elasticsearchOperations.search(queryCaptor.capture(), eq(ProductDocument::class.java))
+            ).thenReturn(hits)
+
+            // when
+            productService.getSuggestions("돌김")
+
+            // then
+            val nativeQuery = queryCaptor.firstValue as NativeQuery
+            val pageable = nativeQuery.pageable
+
+            assertThat(pageable.pageNumber).isEqualTo(0)
+            assertThat(pageable.pageSize).isEqualTo(5)
+        }
+
     }
 
     @Nested
