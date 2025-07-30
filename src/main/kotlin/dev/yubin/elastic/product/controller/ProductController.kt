@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.constraints.Min
 
 @RestController
 @RequestMapping("products")
@@ -26,9 +27,9 @@ class ProductController(
     @GetMapping
     fun getProducts(
         @Parameter(description = "페이지 번호", example = "1")
-        @RequestParam(defaultValue = "1") page: Int,
+        @RequestParam(defaultValue = "1") @Min(0) page: Int,
         @Parameter(description = "페이지당 아이템 수", example = "10")
-        @RequestParam(defaultValue = "10") size: Int
+        @RequestParam(defaultValue = "10") @Min(1) size: Int
     ): ResponseEntity<MutableList<Product?>> {
         val products = productService.getProducts(page, size)
         return ResponseEntity.ok(products)
